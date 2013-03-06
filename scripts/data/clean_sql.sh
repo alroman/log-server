@@ -11,7 +11,8 @@
 # Expect timestamp file
 DATE=`date +'%Y-%m-%d_%H%M'`
 FILE_IN="$DATE.sql"
-FILE_OUT="$DATE.out.sql"
+OUT_FILE="$DATE.out.sql"
+POINTER="$3"
 
 if [ -n "$1" ]; then
     FILE_IN=$1
@@ -24,15 +25,23 @@ if [[ ! -e $FILE_IN ]]; then
 fi
 
 if [ -n "$2" ]; then
-    FILE_OUT=$2
+    OUT_FILE=$2
 fi
 
-# echo $FILE_IN
-# echo $FILE_OUT
+# Create preliminary
+echo "INSERT INTO \`mdl_log\` VALUES " > $OUT_FILE
 
 # Run command
-cat $FILE_IN | grep -E '\([0-9]+,.*\)' | sed 's|),(|),\n(|g' > $FILE_OUT
+#   cat: This takes a raw mdl_log dump file
+#   grep: filter out rows with pattern: (123, 1234567890, ...)
+#   sed: separate the rows with neline, so that we get one row per line
+
+cat $FILE_IN | grep -E '\([0-9]+,.*\)' | sed 's|),(|),\n(|g' | sed -e '1,/($POINTER,/d' >> $OUT_FILE
+
+# cat $IN_FILE | sed -e '1,/($LINE,/d' >> $OUT_FILE
 
 # exit status
 echo $?
+
+# Don't exit like this.. python doesn't like it!
 # exit $?

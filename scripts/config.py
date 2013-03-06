@@ -4,7 +4,11 @@
 #
 
 import ConfigParser
+import logging
 from datetime import date
+
+# Logger for config module
+logger = logging.getLogger('[config     ]')
 
 
 class Config:
@@ -20,13 +24,17 @@ class Config:
                 f.close()
                 self.loadConfig()
 
+                logger.info("successfully loaded config")
+
         except IOError:
             # This means the file doesn't exist, or there was a problem loading it
-            print "-- File does not exist"
+            logger.error('%s file does not exist!', self.cfgFile)
+            raise Error
 
         except ConfigParser.Error:
             # Raise our own exception
-            raise Error("Error settings date or pointer")
+            logger.error('could not parse config file')
+            raise Error
 
     def loadConfig(self):
         config = ConfigParser.RawConfigParser()
@@ -37,10 +45,10 @@ class Config:
         self.date = config.get('LogState', 'date')
 
         # Load DB settings
-        self.host = config.get('Database', 'localhost')
+        self.host = config.get('Database', 'host')
         self.user = config.get('Database', 'user')
         self.passwd = config.get('Database', 'passwd')
-        self.db = config.get('Database', 'db')
+        self.database = config.get('Database', 'database')
 
     def saveConfig(self, pointer):
 
